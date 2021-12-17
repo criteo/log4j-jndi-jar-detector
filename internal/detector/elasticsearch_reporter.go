@@ -50,12 +50,13 @@ func (esr *ElasticSearchReporter) indexMap(doc map[string]interface{}) (*esapi.R
 }
 
 func (esr *ElasticSearchReporter) indexAssessment(assessment map[string]interface{}) error {
+	assessment["@timestamp"] = time.Now().UTC().Format(time.RFC3339)
 	res, err := esr.indexMap(assessment)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
-	if res.StatusCode != 200 {
+	if res.StatusCode != 201 {
 		return fmt.Errorf("unable to index assessment (status=%d, reason=%s)", res.StatusCode, res.Body)
 	}
 	return nil
@@ -67,7 +68,10 @@ func (esr *ElasticSearchReporter) Report(hostAssessment HostAssessment) error {
 		return fmt.Errorf("unable to index host assessment: %s", err)
 	}
 
-	for _, appAssessment := range hostAssessment.VulnerableApplicationAssessments {
+	for _, appAssessment := range hostAssessment.ApplicationAssessments {
+		if !appAssessment.IsVulnerable() {
+			continue
+		}
 		doc := appAssessment.ToReport()
 		doc["hostname"] = hostAssessment.Hostname
 		err := esr.indexAssessment(doc)
