@@ -35,7 +35,7 @@ func NewElasticSearchReporter(url, username, password, indexNameTemplate string)
 }
 
 func (esr *ElasticSearchReporter) index(body io.Reader) (*esapi.Response, error) {
-	date := time.Now().UTC().Format("2016-01-02")
+	date := time.Now().UTC().Format("2006-01-02")
 	index := fmt.Sprintf("%s.%s", esr.indexNameTemplate, date)
 	return esr.client.Index(index, body)
 }
