@@ -46,7 +46,7 @@ func NewJarAssessor(jarChecker JarChecker) JarAssessor {
 }
 
 func (ja *JarAssessor) Assess(path string) (*JarAssessement, error) {
-	logrus.Infof("Assessing: %s", path)
+	logrus.Infof("assessing: %s", path)
 
 	read, err := zip.OpenReader(path)
 
