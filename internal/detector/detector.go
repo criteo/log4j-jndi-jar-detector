@@ -50,7 +50,7 @@ func runDetectionOneIteration(reporters []string) {
 				Message:     err.Error(),
 			})
 		} else {
-			applicationAssessments = append(applicationAssessments, *applicationAssessment)
+			applicationAssessments = append(applicationAssessments, applicationAssessment)
 		}
 	}
 

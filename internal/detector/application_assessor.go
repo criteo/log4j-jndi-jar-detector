@@ -10,19 +10,19 @@ func NewApplicationAssessor(jarChecker JarChecker) *ApplicationAssessor {
 	}
 }
 
-func (aa *ApplicationAssessor) Assess(application Application) (*ApplicationAssessment, error) {
+func (aa *ApplicationAssessor) Assess(application Application) (ApplicationAssessment, error) {
 	jarAssessments := make([]JarAssessement, 0)
 
 	for _, jarPath := range application.Jars {
 		jarAssessment, err := aa.jarAssessor.Assess(jarPath)
 		if err != nil {
-			return nil, err
+			return ApplicationAssessment{}, err
 		}
-		jarAssessments = append(jarAssessments, *jarAssessment)
+		jarAssessments = append(jarAssessments, jarAssessment)
 	}
 	applicationAssessment := ApplicationAssessment{
 		Application:    application,
 		JarAssessments: jarAssessments,
 	}
-	return &applicationAssessment, nil
+	return applicationAssessment, nil
 }

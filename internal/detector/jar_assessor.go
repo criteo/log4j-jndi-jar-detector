@@ -6,9 +6,13 @@ import (
 	"log"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/patrickmn/go-cache"
 	"github.com/sirupsen/logrus"
 )
+
+var JarAssessmentCache = cache.New(3*time.Hour, 10*time.Minute)
 
 const JNDIClassName = "JndiLookup.class"
 
@@ -45,13 +49,17 @@ func NewJarAssessor(jarChecker JarChecker) JarAssessor {
 	}
 }
 
-func (ja *JarAssessor) Assess(path string) (*JarAssessement, error) {
+func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 	logrus.Infof("assessing: %s", path)
+
+	if v, found := JarAssessmentCache.Get(path); found {
+		return v.(JarAssessement), nil
+	}
 
 	read, err := zip.OpenReader(path)
 
 	if err != nil {
-		return nil, err
+		return JarAssessement{}, err
 	}
 	defer read.Close()
 
@@ -70,7 +78,7 @@ func (ja *JarAssessor) Assess(path string) (*JarAssessement, error) {
 
 		freader, err := file.Open()
 		if err != nil {
-			return nil, err
+			return JarAssessement{}, err
 		}
 		defer freader.Close()
 
@@ -108,5 +116,6 @@ func (ja *JarAssessor) Assess(path string) (*JarAssessement, error) {
 		isJNDIClassIncluded: jniClassPresent,
 		Log4jVersion:        version,
 	}
-	return &jarAssessment, nil
+	JarAssessmentCache.Set(path, jarAssessment, cache.DefaultExpiration)
+	return jarAssessment, nil
 }
