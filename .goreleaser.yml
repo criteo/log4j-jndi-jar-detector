@@ -12,7 +12,7 @@ builds:
       - windows
       - darwin
     main: ./cmd/log4j-jndi-jar-detector
-  - id: log4j-jndi-jar-detector-amd64-cgo
+  - id: cgo
     env:
       - CGO_ENABLED=1
     goos:
@@ -21,12 +21,12 @@ builds:
       - amd64
     main: ./cmd/log4j-jndi-jar-detector
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - id: default
+    builds:
+      - default
+  - id: cgo
+    builds:
+      - cgo
 checksum:
   name_template: 'checksums.txt'
 snapshot:
