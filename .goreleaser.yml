@@ -5,7 +5,8 @@ before:
     # You may remove this if you don't use go modules.
     - go mod tidy
 builds:
-  - env:
+  - id: nocgo
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -21,12 +22,13 @@ builds:
       - amd64
     main: ./cmd/log4j-jndi-jar-detector
 archives:
-  - id: default
+  - id: nocgo
     builds:
-      - default
+      - nocgo
   - id: cgo
     builds:
       - cgo
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}-cgo"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
