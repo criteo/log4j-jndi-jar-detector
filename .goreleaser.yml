@@ -12,11 +12,13 @@ builds:
       - windows
       - darwin
     main: ./cmd/log4j-jndi-jar-detector
-  - id: log4j-jndi-jar-detector-cgo
+  - id: log4j-jndi-jar-detector-amd64-cgo
     env:
       - CGO_ENABLED=1
     goos:
       - linux
+    goarch:
+      - amd64
     main: ./cmd/log4j-jndi-jar-detector
 archives:
   - replacements:
