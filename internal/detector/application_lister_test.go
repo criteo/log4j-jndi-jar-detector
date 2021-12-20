@@ -10,34 +10,76 @@ import (
 )
 
 func TestExtractAgentNoKV(t *testing.T) {
-	jars, err := extractAgent("java -javaagent:/path/to/elastic-apm-agent.jar -Delastic.apm.service_name=my-cool-service -javaagent:/path/to/elastic.jar -Delastic.apm.server_url=http://localhost:8200 -jar application.jar")
+	args := []string{
+		"java",
+		"-javaagent:/path/to/elastic-apm-agent.jar",
+		"-Delastic.apm.service_name=my-cool-service",
+		"-javaagent:/path/to/elastic.jar",
+		"-Delastic.apm.server_url=http://localhost:8200",
+		"-jar application.jar",
+	}
+
+	jars, err := extractAgent(args)
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, jars, []string{"/path/to/elastic-apm-agent.jar", "/path/to/elastic.jar"})
 }
 
 func TestExtractAgentWithKV(t *testing.T) {
-	jars, err := extractAgent("java -javaagent:/path/to/elastic-apm-agent.jar=test -Delastic.apm.service_name=my-cool-service -Delastic.apm.server_url=http://localhost:8200 -jar application.jar")
+	args := []string{
+		"java",
+		"-javaagent:/path/to/elastic-apm-agent.jar=test",
+		"-Delastic.apm.service_name=my-cool-service",
+		"-Delastic.apm.server_url=http://localhost:8200",
+		"-jar",
+		"application.jar",
+	}
+	jars, err := extractAgent(args)
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, jars, []string{"/path/to/elastic-apm-agent.jar"})
 }
 
 func TestExtractAgentWithEmptyFlag(t *testing.T) {
-	_, err := extractAgent("java -javaagent: -Delastic.apm.service_name=my-cool-service -Delastic.apm.server_url=http://localhost:8200 -jar application.jar")
+	args := []string{
+		"java",
+		"-javaagent:",
+		"-Delastic.apm.service_name=my-cool-service",
+		"-Delastic.apm.server_url=http://localhost:8200",
+		"-jar",
+		"application.jar",
+	}
+	_, err := extractAgent(args)
 	assert.Error(t, err)
 }
 
 func TestExtractOptionArgsWithSomeArgs(t *testing.T) {
-	jars, err := extractOptionArgs(
-		"java -javaagent:/path/to/elastic-apm-agent.jar -cp app-cp.jar -classpath rel/app-classpath.jar -Delastic.apm.service_name=my-cool-service -javaagent:/path/to/elastic.jar "+
-			"-Delastic.apm.server_url=http://localhost:8200 -jar application.jar", []string{"-classpath", "-jar", "-cp"})
+	args := []string{
+		"java",
+		"-javaagent:/path/to/elastic-apm-agent.jar",
+		"-cp",
+		"app-cp.jar",
+		"-classpath",
+		"rel/app-classpath.jar",
+		"-Delastic.apm.service_name=my-cool-service",
+		"-javaagent:/path/to/elastic.jar",
+		"-Delastic.apm.server_url=http://localhost:8200",
+		"-jar",
+		"application.jar",
+	}
+	jars, err := extractOptionArgs(args, []string{"-classpath", "-jar", "-cp"})
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, jars, []string{"application.jar", "app-cp.jar", "rel/app-classpath.jar"})
 }
 
 func TestExtractOptionArgsWithoutArgs(t *testing.T) {
+	args := []string{
+		"java",
+		"-javaagent:/path/to/elastic-apm-agent.jar",
+		"-Delastic.apm.service_name=my-cool-service",
+		"-javaagent:/path/to/elastic.jar",
+		"-Delastic.apm.server_url=http://localhost:8200",
+	}
 	jars, err := extractOptionArgs(
-		"java -javaagent:/path/to/elastic-apm-agent.jar -Delastic.apm.service_name=my-cool-service -javaagent:/path/to/elastic.jar "+
-			"-Delastic.apm.server_url=http://localhost:8200", []string{"-classpath", "-jar", "-cp"})
+		args, []string{"-classpath", "-jar", "-cp"})
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, jars, []string{})
 }
@@ -79,8 +121,18 @@ func TestParseEnvVarsWithMultpleEqualSigns(t *testing.T) {
 }
 
 func TestExtractJarsFromProcess(t *testing.T) {
-	classpaths, err := extractClasspathsFromProcess("java -javaagent:/path/to/elastic-apm-agent.jar -cp test.jar -Delastic.apm.service_name=my-cool-service "+
-		"-javaagent:/path/to/elastic.jar -Delastic.apm.server_url=http://localhost:8200 -jar application.jar", []string{"TEST=myvar", "CLASSPATH=cp.jar"})
+	args := []string{
+		"java",
+		"-javaagent:/path/to/elastic-apm-agent.jar",
+		"-cp",
+		"test.jar",
+		"-Delastic.apm.service_name=my-cool-service",
+		"-javaagent:/path/to/elastic.jar",
+		"-Delastic.apm.server_url=http://localhost:8200",
+		"-jar",
+		"application.jar",
+	}
+	classpaths, err := extractClasspathsFromProcess(args, []string{"TEST=myvar", "CLASSPATH=cp.jar"})
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, classpaths, []string{"/path/to/elastic-apm-agent.jar", "/path/to/elastic.jar", "test.jar", "application.jar", "cp.jar"})
 }
