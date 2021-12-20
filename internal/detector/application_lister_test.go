@@ -104,7 +104,12 @@ func TestExpandJarPaths(t *testing.T) {
 	}
 	defer f3.Close()
 
-	jars, err := expandJarPaths(tmpDir, []string{"."})
+	jars, err := expandJarPaths(tmpDir, []string{".", tmpDir})
 	assert.NoError(t, err)
-	assert.ElementsMatch(t, jars, []string{path.Join(tmpDir, "temp.jar"), path.Join(tmpDir, "subdir", "temp.jar")})
+	assert.ElementsMatch(t, jars, []string{
+		path.Join(tmpDir, "temp.jar"),
+		path.Join(tmpDir, "subdir", "temp.jar"),
+		path.Join(tmpDir, "temp.jar"),
+		path.Join(tmpDir, "subdir", "temp.jar"),
+	})
 }
