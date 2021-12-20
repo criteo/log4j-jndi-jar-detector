@@ -20,12 +20,12 @@ var VulnerableJarAssessment = JarAssessement{
 }
 
 var ExampleApplication = Application{
-	Name:     "myapp",
-	Username: "myuser",
-	Cmdline:  "java -jar app.jar",
-	Cwd:      "/home/myuser",
-	Pid:      4567,
-	Jars:     []string{"app.jar"},
+	Name:         "myapp",
+	Username:     "myuser",
+	CmdlineSlice: []string{"java", "-jar", "app.jar"},
+	Cwd:          "/home/myuser",
+	Pid:          4567,
+	Jars:         []string{"app.jar"},
 }
 
 var VulnerableApplicationAssessment = ApplicationAssessment{

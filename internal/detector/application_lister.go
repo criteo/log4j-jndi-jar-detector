@@ -14,19 +14,18 @@ import (
 const JAVA_AGENT_FLAG = "-javaagent:"
 
 type Application struct {
-	Name     string
-	Username string
-	Cmdline  string
-	Cwd      string
-	Pid      int32
-	Jars     []string
+	Name         string
+	Username     string
+	CmdlineSlice []string
+	Cwd          string
+	Pid          int32
+	Jars         []string
 }
 
-func extractAgent(cmdline string) ([]string, error) {
-	args := strings.Split(cmdline, " ")
+func extractAgent(cmdlineSlice []string) ([]string, error) {
 	paths := make([]string, 0)
 
-	for _, arg := range args {
+	for _, arg := range cmdlineSlice {
 		if strings.HasPrefix(arg, JAVA_AGENT_FLAG) {
 			value := arg[len(JAVA_AGENT_FLAG):]
 			kv := strings.Split(value, "=")
@@ -39,11 +38,10 @@ func extractAgent(cmdline string) ([]string, error) {
 	return paths, nil
 }
 
-func extractOptionArgs(cmdline string, flags []string) ([]string, error) {
-	args := strings.Split(cmdline, " ")
+func extractOptionArgs(cmdlineSlice []string, flags []string) ([]string, error) {
 	flagIndices := make(map[int]struct{})
 
-	for i, arg := range args {
+	for i, arg := range cmdlineSlice {
 		for _, flag := range flags {
 			if arg == flag {
 				flagIndices[i+1] = struct{}{}
@@ -53,10 +51,10 @@ func extractOptionArgs(cmdline string, flags []string) ([]string, error) {
 
 	values := make(map[string]struct{})
 	for idx := range flagIndices {
-		if len(args) <= idx {
-			return nil, fmt.Errorf("unable to parse flag at position %d in %s", idx+1, cmdline)
+		if len(cmdlineSlice) <= idx {
+			return nil, fmt.Errorf("unable to parse flag at position %d in %s", idx+1, strings.Join(cmdlineSlice, " "))
 		}
-		values[args[idx]] = struct{}{}
+		values[cmdlineSlice[idx]] = struct{}{}
 	}
 
 	out := make([]string, 0)
@@ -85,9 +83,9 @@ func parseEnvVars(environ []string) (map[string]string, error) {
 	return envVars, nil
 }
 
-func extractClasspathsFromProcess(cmdline string, environ []string) ([]string, error) {
+func extractClasspathsFromProcess(cmdlineSlice []string, environ []string) ([]string, error) {
 	jarRepository := make(map[string]struct{})
-	agentJars, err := extractAgent(cmdline)
+	agentJars, err := extractAgent(cmdlineSlice)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse javaagent from command line: %w", err)
 	}
@@ -96,7 +94,7 @@ func extractClasspathsFromProcess(cmdline string, environ []string) ([]string, e
 	}
 
 	// Some jars or directories are referenced in command line flags
-	cmdClasspaths, err := extractOptionArgs(cmdline, []string{"-jar", "-cp", "-classpath"})
+	cmdClasspaths, err := extractOptionArgs(cmdlineSlice, []string{"-jar", "-cp", "-classpath"})
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse classpath from command line: %w", err)
 	}
@@ -178,18 +176,20 @@ func ListApplications(commandPattern string) ([]Application, error) {
 			continue
 		}
 		if strings.HasPrefix(name, commandPattern) {
-			cmdline, err := p.Cmdline()
+			cmdlineSlice, err := p.CmdlineSlice()
 			if err != nil {
 				logrus.Warnf("unable to extract command line from process: %s", err)
 				continue
 			}
+			logrus.Debugf("command line to assess: %s", strings.Join(cmdlineSlice, " "))
+
 			env, err := p.Environ()
 			if err != nil {
 				logrus.Warnf("unable to extract environ from process: %s", err)
 				continue
 			}
 
-			classpaths, err := extractClasspathsFromProcess(cmdline, env)
+			classpaths, err := extractClasspathsFromProcess(cmdlineSlice, env)
 			if err != nil {
 				logrus.Warnf("unable to extract classpaths from process: %s", err)
 				continue
@@ -214,12 +214,12 @@ func ListApplications(commandPattern string) ([]Application, error) {
 			}
 
 			applications = append(applications, Application{
-				Name:     name,
-				Cmdline:  cmdline,
-				Cwd:      cwd,
-				Pid:      p.Pid,
-				Jars:     jarPaths,
-				Username: username,
+				Name:         name,
+				CmdlineSlice: cmdlineSlice,
+				Cwd:          cwd,
+				Pid:          p.Pid,
+				Jars:         jarPaths,
+				Username:     username,
 			})
 		}
 	}

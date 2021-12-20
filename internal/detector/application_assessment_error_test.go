@@ -9,12 +9,12 @@ import (
 func TestApplicationAssessmentErrorToReport(t *testing.T) {
 	aae := ApplicationAssessmentError{
 		Application: Application{
-			Name:     "test-app",
-			Username: "myuser",
-			Cmdline:  "java -jar test.jar",
-			Cwd:      "/home/myuser",
-			Pid:      3456,
-			Jars:     []string{"/home/myuser/test.jar"},
+			Name:         "test-app",
+			Username:     "myuser",
+			CmdlineSlice: []string{"java", "-jar", "test.jar"},
+			Cwd:          "/home/myuser",
+			Pid:          3456,
+			Jars:         []string{"/home/myuser/test.jar"},
 		},
 		Message: "fatal error",
 	}

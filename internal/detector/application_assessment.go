@@ -55,7 +55,7 @@ func (aa ApplicationAssessment) ToReport() map[string]interface{} {
 
 	return map[string]interface{}{
 		"kind":           "application",
-		"appname":        aa.Application.Cmdline,
+		"appname":        strings.Join(aa.Application.CmdlineSlice, " "),
 		"username":       aa.Application.Username,
 		"workingdir":     aa.Application.Cwd,
 		"pid":            aa.Application.Pid,

@@ -10,11 +10,11 @@ import (
 func TestApplicationAssessment(t *testing.T) {
 	assessor := NewApplicationAssessor(NewJarCheckerImpl())
 	assessment, err := assessor.Assess(Application{
-		Name:     "myapp",
-		Username: "myuser",
-		Cmdline:  "java -jar app.jar",
-		Cwd:      "/home/myuser",
-		Pid:      4567,
+		Name:         "myapp",
+		Username:     "myuser",
+		CmdlineSlice: []string{"java", "-jar", "app.jar"},
+		Cwd:          "/home/myuser",
+		Pid:          4567,
 		Jars: []string{
 			filepath.Join(getCurrentPath(), "../..", "resources", "log4j-core-2.12.1.jar"),
 			filepath.Join(getCurrentPath(), "../..", "resources", "log4j-core-2.17.0.jar"),
@@ -27,11 +27,11 @@ func TestApplicationAssessment(t *testing.T) {
 func TestApplicationAssessmentUnexistingJar(t *testing.T) {
 	assessor := NewApplicationAssessor(NewJarCheckerImpl())
 	_, err := assessor.Assess(Application{
-		Name:     "myapp",
-		Username: "myuser",
-		Cmdline:  "java -jar app.jar",
-		Cwd:      "/home/myuser",
-		Pid:      4567,
+		Name:         "myapp",
+		Username:     "myuser",
+		CmdlineSlice: []string{"java", "-jar", "app.jar"},
+		Cwd:          "/home/myuser",
+		Pid:          4567,
 		Jars: []string{
 			"unexisting.jar",
 		},
