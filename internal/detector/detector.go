@@ -89,7 +89,7 @@ func runDetectionOneIteration(reporters []string, fqdn string) {
 	}
 }
 
-func RunDetection(reporters []string, Daemon bool, DaemonInterval time.Duration) {
+func RunDetection(reporters []string, daemon bool, daemonInterval time.Duration) {
 	// check if provided reporters are valid
 	for _, r := range reporters {
 		if !stringInSlice(r, AvailableReporters) {
@@ -132,11 +132,11 @@ func RunDetection(reporters []string, Daemon bool, DaemonInterval time.Duration)
 	for {
 		runDetectionOneIteration(reporters, name)
 
-		if !Daemon {
+		if !daemon {
 			break
 		} else {
-			logrus.Infof("sleeping for %d seconds...", int(DaemonInterval.Seconds()))
-			time.Sleep(DaemonInterval)
+			logrus.Infof("sleeping for %d seconds...", int(daemonInterval.Seconds()))
+			time.Sleep(daemonInterval)
 		}
 	}
 }
