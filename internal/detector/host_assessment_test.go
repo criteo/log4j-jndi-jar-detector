@@ -47,7 +47,7 @@ func TestHostAssessmentToReport(t *testing.T) {
 
 	assert.Equal(t, map[string]interface{}{
 		"duration":               130.0,
-		"hostname":               "test",
+		"fqdn":                   "test",
 		"kind":                   "host",
 		"nb_java_processes":      2,
 		"nb_vuln_java_processes": 1,
