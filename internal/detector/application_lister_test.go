@@ -3,7 +3,7 @@ package detector
 import (
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -87,18 +87,18 @@ func TestExtractJarsFromProcess(t *testing.T) {
 
 func TestExpandJarPaths(t *testing.T) {
 	var tmpDir = t.TempDir()
-	f1, err := os.Create(path.Join(tmpDir, "temp.txt"))
+	f1, err := os.Create(filepath.Join(tmpDir, "temp.txt"))
 	assert.NoError(t, err)
 	defer f1.Close()
 
-	f2, err := os.Create(path.Join(tmpDir, "temp.jar"))
+	f2, err := os.Create(filepath.Join(tmpDir, "temp.jar"))
 	assert.NoError(t, err)
 	defer f2.Close()
 
-	err = os.Mkdir(path.Join(tmpDir, "subdir"), 0700)
+	err = os.Mkdir(filepath.Join(tmpDir, "subdir"), 0700)
 	assert.NoError(t, err)
 
-	f3, err := os.Create(path.Join(tmpDir, "subdir/temp.jar"))
+	f3, err := os.Create(filepath.Join(tmpDir, "subdir/temp.jar"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -107,9 +107,9 @@ func TestExpandJarPaths(t *testing.T) {
 	jars, err := expandJarPaths(tmpDir, []string{".", tmpDir})
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, jars, []string{
-		path.Join(tmpDir, "temp.jar"),
-		path.Join(tmpDir, "subdir", "temp.jar"),
-		path.Join(tmpDir, "temp.jar"),
-		path.Join(tmpDir, "subdir", "temp.jar"),
+		filepath.Join(tmpDir, "temp.jar"),
+		filepath.Join(tmpDir, "subdir", "temp.jar"),
+		filepath.Join(tmpDir, "temp.jar"),
+		filepath.Join(tmpDir, "subdir", "temp.jar"),
 	})
 }
