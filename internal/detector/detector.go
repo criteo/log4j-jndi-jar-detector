@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Showmax/go-fqdn"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,13 +23,7 @@ func stringInSlice(str string, slice []string) bool {
 	return false
 }
 
-func runDetectionOneIteration(reporters []string) {
-	name, err := os.Hostname()
-	if err != nil {
-		logrus.Errorf("unable to get hostname: %s", err)
-		return
-	}
-
+func runDetectionOneIteration(reporters []string, hostname string) {
 	applications, err := ListApplications("java")
 	if err != nil {
 		logrus.Errorf("unable to list java applications: %s", err)
@@ -60,7 +55,7 @@ func runDetectionOneIteration(reporters []string) {
 	endTime := time.Now().UTC()
 
 	hostAssessment := HostAssessment{
-		Hostname:                    name,
+		Hostname:                    hostname,
 		ApplicationAssessments:      applicationAssessments,
 		ApplicationAssessmentErrors: applicationAssessmentErrors,
 		StartTime:                   startTime,
@@ -126,8 +121,16 @@ func RunDetection(reporters []string, Daemon bool, DaemonInterval time.Duration)
 		}
 	}
 
+	name, err := fqdn.FqdnHostname()
+	if err != nil {
+		logrus.Errorf("unable to get hostname: %s", err)
+		return
+	}
+
+	logrus.Infof("assessing host %s", name)
+
 	for {
-		runDetectionOneIteration(reporters)
+		runDetectionOneIteration(reporters, name)
 
 		if !Daemon {
 			break
