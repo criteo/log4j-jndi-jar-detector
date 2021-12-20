@@ -203,7 +203,7 @@ func ListApplications(commandPattern string) ([]Application, error) {
 
 			jarPaths, err := expandJarPaths(cwd, classpaths)
 			if err != nil {
-				logrus.Warnf("unable to extract expand jar classpaths: %s", err)
+				logrus.Warnf("unable to expand classpaths: %s", err)
 				continue
 			}
 
