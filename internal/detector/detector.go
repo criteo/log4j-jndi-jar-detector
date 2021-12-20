@@ -29,9 +29,10 @@ func runDetectionOneIteration(reporters []string) {
 		return
 	}
 
-	applications, err := ListJavaApplications("java")
+	applications, err := ListApplications("java")
 	if err != nil {
 		logrus.Errorf("unable to list java applications: %s", err)
+		return
 	}
 
 	applicationAssessor := NewApplicationAssessor(NewJarCheckerImpl())

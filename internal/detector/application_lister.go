@@ -170,7 +170,7 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 	return jars, nil
 }
 
-func ListJavaApplications(commandPattern string) ([]Application, error) {
+func ListApplications(commandPattern string) ([]Application, error) {
 	processes, _ := process.Processes()
 	applications := make([]Application, 0)
 	for _, p := range processes {
