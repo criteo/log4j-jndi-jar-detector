@@ -23,7 +23,7 @@ func stringInSlice(str string, slice []string) bool {
 	return false
 }
 
-func runDetectionOneIteration(reporters []string, hostname string) {
+func runDetectionOneIteration(reporters []string, fqdn string) {
 	applications, err := ListApplications("java")
 	if err != nil {
 		logrus.Errorf("unable to list java applications: %s", err)
@@ -55,7 +55,7 @@ func runDetectionOneIteration(reporters []string, hostname string) {
 	endTime := time.Now().UTC()
 
 	hostAssessment := HostAssessment{
-		Hostname:                    hostname,
+		FQDN:                        fqdn,
 		ApplicationAssessments:      applicationAssessments,
 		ApplicationAssessmentErrors: applicationAssessmentErrors,
 		StartTime:                   startTime,
@@ -123,7 +123,7 @@ func RunDetection(reporters []string, Daemon bool, DaemonInterval time.Duration)
 
 	name, err := fqdn.FqdnHostname()
 	if err != nil {
-		logrus.Errorf("unable to get hostname: %s", err)
+		logrus.Errorf("unable to get fqdn: %s", err)
 		return
 	}
 

@@ -3,17 +3,17 @@ package detector
 import "time"
 
 type HostAssessment struct {
-	Hostname                    string
+	FQDN                        string
 	ApplicationAssessments      []ApplicationAssessment
 	ApplicationAssessmentErrors []ApplicationAssessmentError
 	StartTime                   time.Time
 	EndTime                     time.Time
 }
 
-func NewHostAssessment(hostname string, appAssessments []ApplicationAssessment,
+func NewHostAssessment(fqdn string, appAssessments []ApplicationAssessment,
 	appAssessmentErrors []ApplicationAssessmentError, startTime, endTime time.Time) HostAssessment {
 	return HostAssessment{
-		Hostname:                    hostname,
+		FQDN:                        fqdn,
 		ApplicationAssessments:      appAssessments,
 		ApplicationAssessmentErrors: appAssessmentErrors,
 		StartTime:                   startTime,
@@ -31,7 +31,7 @@ func (ha HostAssessment) ToReport() map[string]interface{} {
 
 	return map[string]interface{}{
 		"kind":                   "host",
-		"hostname":               ha.Hostname,
+		"fqdn":                   ha.FQDN,
 		"nb_java_processes":      len(ha.ApplicationAssessments),
 		"nb_vuln_java_processes": len(vulnerableAppAssessments),
 		"run_start_time":         ha.StartTime.Format(time.RFC3339),
