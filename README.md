@@ -26,6 +26,7 @@ cluster in case the data is collected from a fleet of servers.
     -h, --help                help for log4j-jndi-jar-detector
     -i, --interval duration   duration between intervals in daemon mode (default 15m0s)
     -r, --reporters strings   Reporters to use (stdout, elasticsearch) (default [stdout])
+        --verbose             enable verbose logs
 
 ### Stdout Reporter
 
