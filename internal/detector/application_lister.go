@@ -143,7 +143,7 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 	jars := []string{}
 	for _, p := range paths {
 		var absPath = p
-		if !strings.HasPrefix(p, "/") {
+		if !filepath.IsAbs(p) {
 			absPath = path.Join(cwd, p)
 		}
 
