@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -144,7 +143,7 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 	for _, p := range paths {
 		var absPath = p
 		if !filepath.IsAbs(p) {
-			absPath = path.Join(cwd, p)
+			absPath = filepath.Join(cwd, p)
 		}
 
 		if _, err := os.Stat(absPath); os.IsNotExist(err) {
