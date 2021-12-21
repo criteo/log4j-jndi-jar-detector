@@ -132,9 +132,22 @@ func TestExtractJarsFromProcess(t *testing.T) {
 		"-jar",
 		"application.jar",
 	}
-	classpaths, err := extractClasspathsFromProcess(args, []string{"TEST=myvar", "CLASSPATH=cp.jar"})
+	classpaths, err := extractClasspathsFromProcess(args, []string{
+		"TEST=myvar",
+		"CLASSPATH=cp.jar",
+		"USER_CLASSPATH=user.jar:/usr/lib/*",
+		"USER_CLASSPATH_TEST=user2.jar",
+	})
 	assert.NoError(t, err)
-	assert.ElementsMatch(t, classpaths, []string{"/path/to/elastic-apm-agent.jar", "/path/to/elastic.jar", "test.jar", "application.jar", "cp.jar"})
+	assert.ElementsMatch(t, classpaths, []string{
+		"/path/to/elastic-apm-agent.jar",
+		"/path/to/elastic.jar", "test.jar",
+		"application.jar",
+		"cp.jar",
+		"user.jar",
+		"user2.jar",
+		"/usr/lib/*",
+	})
 }
 
 func TestExpandJarPaths(t *testing.T) {

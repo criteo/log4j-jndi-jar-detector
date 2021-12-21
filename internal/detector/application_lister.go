@@ -83,11 +83,27 @@ func parseEnvVars(environ []string) (map[string]string, error) {
 	return envVars, nil
 }
 
+func extractClasspathsFromEnv(environ []string) ([]string, error) {
+	envVars, err := parseEnvVars(environ)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse environment variables: %s", err)
+	}
+
+	jars := make([]string, 0)
+
+	for envKey, envValue := range envVars {
+		if strings.Contains(envKey, "CLASSPATH") {
+			jars = append(jars, parseClassPath(envValue)...)
+		}
+	}
+	return jars, nil
+}
+
 func extractClasspathsFromProcess(cmdlineSlice []string, environ []string) ([]string, error) {
 	jarRepository := make(map[string]struct{})
 	agentJars, err := extractAgent(cmdlineSlice)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse javaagent from command line: %w", err)
+		return nil, fmt.Errorf("unable to parse javaagent from command line: %s", err)
 	}
 	for _, jar := range agentJars {
 		jarRepository[jar] = struct{}{}
@@ -96,7 +112,7 @@ func extractClasspathsFromProcess(cmdlineSlice []string, environ []string) ([]st
 	// Some jars or directories are referenced in command line flags
 	cmdClasspaths, err := extractOptionArgs(cmdlineSlice, []string{"-jar", "-cp", "-classpath"})
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse classpath from command line: %w", err)
+		return nil, fmt.Errorf("unable to parse classpath from command line: %s", err)
 	}
 
 	for _, cmdClasspath := range cmdClasspaths {
@@ -106,17 +122,13 @@ func extractClasspathsFromProcess(cmdlineSlice []string, environ []string) ([]st
 		}
 	}
 
-	envVars, err := parseEnvVars(environ)
+	envClasspaths, err := extractClasspathsFromEnv(environ)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse environment variables: %w", err)
+		return nil, fmt.Errorf("unable to parse classpath from env variables: %s", err)
 	}
 
-	// If classpath env var is defined, extract the jars
-	if cpVar, ok := envVars["CLASSPATH"]; ok {
-		jarPaths := parseClassPath(cpVar)
-		for _, jar := range jarPaths {
-			jarRepository[jar] = struct{}{}
-		}
+	for _, envCp := range envClasspaths {
+		jarRepository[envCp] = struct{}{}
 	}
 
 	classpaths := make([]string, 0)
