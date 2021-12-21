@@ -140,6 +140,8 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 	jars := []string{}
 	for _, p := range paths {
 		logrus.Debugf("trying to expand path %s", p)
+		p = strings.TrimSuffix(p, "*")
+
 		var absPath = p
 		if !filepath.IsAbs(p) {
 			absPath = filepath.Join(cwd, p)
@@ -151,7 +153,7 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 
 		isDir, err := isDirectory(absPath)
 		if err != nil {
-			return nil, fmt.Errorf("unable to determin if %s is a directory: %s", absPath, err)
+			return nil, fmt.Errorf("unable to determine if %s is a directory: %s", absPath, err)
 		}
 
 		if isDir {
