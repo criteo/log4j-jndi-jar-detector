@@ -178,3 +178,14 @@ func TestExpandJarPaths(t *testing.T) {
 		filepath.Join(tmpDir, "subdir", "temp.jar"),
 	})
 }
+
+func TestDoNotExpandNonJars(t *testing.T) {
+	var tmpDir = t.TempDir()
+	f1, err := os.Create(filepath.Join(tmpDir, "test.txt"))
+	assert.NoError(t, err)
+	defer f1.Close()
+
+	jars, err := expandJarPaths(tmpDir, []string{"test.txt"})
+	assert.NoError(t, err)
+	assert.Len(t, jars, 0)
+}
