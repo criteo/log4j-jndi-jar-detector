@@ -3,6 +3,7 @@ package detector
 import (
 	"archive/zip"
 	"bufio"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -59,7 +60,7 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 	read, err := zip.OpenReader(path)
 
 	if err != nil {
-		return JarAssessement{}, err
+		return JarAssessement{}, fmt.Errorf("unable to open zip file %s: %s", path, err)
 	}
 	defer read.Close()
 
@@ -78,7 +79,7 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 
 		freader, err := file.Open()
 		if err != nil {
-			return JarAssessement{}, err
+			return JarAssessement{}, fmt.Errorf("unable to open pom.properties from %s: %s", path, err)
 		}
 		defer freader.Close()
 

@@ -151,7 +151,7 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 
 		isDir, err := isDirectory(absPath)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("unable to determin if %s is a directory: %s", absPath, err)
 		}
 
 		if isDir {
@@ -164,6 +164,10 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 				return nil
 			})
 		} else {
+			// skip if it's not a jar
+			if filepath.Ext(absPath) != ".jar" {
+				continue
+			}
 			logrus.Debugf("%s is a jar and does not need to be expanded", p)
 			jars = append(jars, absPath)
 		}
