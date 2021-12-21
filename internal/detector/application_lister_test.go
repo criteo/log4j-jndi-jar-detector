@@ -189,3 +189,14 @@ func TestDoNotExpandNonJars(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, jars, 0)
 }
+
+func TestPathsContainingStars(t *testing.T) {
+	var tmpDir = t.TempDir()
+	f1, err := os.Create(filepath.Join(tmpDir, "test.jar"))
+	assert.NoError(t, err)
+	defer f1.Close()
+
+	jars, err := expandJarPaths(tmpDir, []string{filepath.Join(tmpDir, "*")})
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, jars, []string{filepath.Join(tmpDir, "test.jar")})
+}
