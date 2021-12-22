@@ -200,3 +200,17 @@ func TestPathsContainingStars(t *testing.T) {
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, jars, []string{filepath.Join(tmpDir, "test.jar")})
 }
+
+func TestDirWithJarExtension(t *testing.T) {
+	var tmpDir = t.TempDir()
+	err := os.Mkdir(filepath.Join(tmpDir, "test.jar"), 0o755)
+	assert.NoError(t, err)
+
+	f1, err := os.Create(filepath.Join(tmpDir, "test.jar", "user.jar"))
+	assert.NoError(t, err)
+	defer f1.Close()
+
+	jars, err := expandJarPaths(tmpDir, []string{tmpDir})
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, jars, []string{filepath.Join(tmpDir, "test.jar", "user.jar")})
+}

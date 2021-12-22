@@ -171,7 +171,10 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 		if isDir {
 			logrus.Debugf("%s is a directory that needs to be expanded", p)
 			filepath.Walk(absPath, func(path string, info fs.FileInfo, err error) error {
-				if filepath.Ext(path) == ".jar" {
+				if err != nil {
+					return err
+				}
+				if filepath.Ext(path) == ".jar" && !info.IsDir() {
 					logrus.Debugf("%s has been found", path)
 					jars = append(jars, path)
 				}
