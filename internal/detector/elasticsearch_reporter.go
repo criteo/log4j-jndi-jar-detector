@@ -65,7 +65,7 @@ func (esr *ElasticSearchReporter) indexAssessment(assessment map[string]interfac
 func (esr *ElasticSearchReporter) Report(hostAssessment HostAssessment) error {
 	err := esr.indexAssessment(hostAssessment.ToReport())
 	if err != nil {
-		return fmt.Errorf("unable to index host assessment: %s", err)
+		return fmt.Errorf("unable to index host assessment: %w", err)
 	}
 
 	for _, appAssessment := range hostAssessment.ApplicationAssessments {
@@ -76,7 +76,7 @@ func (esr *ElasticSearchReporter) Report(hostAssessment HostAssessment) error {
 		doc["fqdn"] = hostAssessment.FQDN
 		err := esr.indexAssessment(doc)
 		if err != nil {
-			return fmt.Errorf("unable to index application assessment: %s", err)
+			return fmt.Errorf("unable to index application assessment: %w", err)
 		}
 	}
 
@@ -85,7 +85,7 @@ func (esr *ElasticSearchReporter) Report(hostAssessment HostAssessment) error {
 		doc["fqdn"] = hostAssessment.FQDN
 		err := esr.indexAssessment(doc)
 		if err != nil {
-			return fmt.Errorf("unable to index application assessment error: %s", err)
+			return fmt.Errorf("unable to index application assessment error: %w", err)
 		}
 	}
 
