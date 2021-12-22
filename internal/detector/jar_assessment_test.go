@@ -15,12 +15,12 @@ func TestJarAssessmentIsVulnerable(t *testing.T) {
 	}{
 		{false, Semver{1, 0, 0}, false},
 		{true, Semver{1, 0, 0}, false},
-		{false, Semver{2, 0, 0}, false},
-		{true, Semver{2, 0, 0}, false},
+		{false, Semver{2, 0, 0}, true},
+		{true, Semver{2, 0, 0}, true},
 		{true, Semver{2, 2, 0}, true},
 		{false, Semver{2, 2, 0}, false},
-		{false, Semver{2, 16, 0}, false},
-		{true, Semver{2, 16, 0}, false},
+		{false, Semver{2, 17, 0}, false},
+		{true, Semver{2, 17, 0}, false},
 	}
 
 	for _, tc := range testCases {
