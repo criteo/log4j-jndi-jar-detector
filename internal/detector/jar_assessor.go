@@ -60,7 +60,7 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 	read, err := zip.OpenReader(path)
 
 	if err != nil {
-		return JarAssessement{}, fmt.Errorf("unable to open zip file %s: %s", path, err)
+		return JarAssessement{}, fmt.Errorf("unable to open zip file %s: %w", path, err)
 	}
 	defer read.Close()
 
@@ -79,7 +79,7 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 
 		freader, err := file.Open()
 		if err != nil {
-			return JarAssessement{}, fmt.Errorf("unable to open pom.properties from %s: %s", path, err)
+			return JarAssessement{}, fmt.Errorf("unable to open pom.properties from %s: %w", path, err)
 		}
 		defer freader.Close()
 

@@ -86,7 +86,7 @@ func parseEnvVars(environ []string) (map[string]string, error) {
 func extractClasspathsFromEnv(environ []string) ([]string, error) {
 	envVars, err := parseEnvVars(environ)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse environment variables: %s", err)
+		return nil, fmt.Errorf("unable to parse environment variables: %w", err)
 	}
 
 	jars := make([]string, 0)
@@ -103,7 +103,7 @@ func extractClasspathsFromProcess(cmdlineSlice []string, environ []string) ([]st
 	jarRepository := make(map[string]struct{})
 	agentJars, err := extractAgent(cmdlineSlice)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse javaagent from command line: %s", err)
+		return nil, fmt.Errorf("unable to parse javaagent from command line: %w", err)
 	}
 	for _, jar := range agentJars {
 		jarRepository[jar] = struct{}{}
@@ -112,7 +112,7 @@ func extractClasspathsFromProcess(cmdlineSlice []string, environ []string) ([]st
 	// Some jars or directories are referenced in command line flags
 	cmdClasspaths, err := extractOptionArgs(cmdlineSlice, []string{"-jar", "-cp", "-classpath"})
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse classpath from command line: %s", err)
+		return nil, fmt.Errorf("unable to parse classpath from command line: %w", err)
 	}
 
 	for _, cmdClasspath := range cmdClasspaths {
@@ -124,7 +124,7 @@ func extractClasspathsFromProcess(cmdlineSlice []string, environ []string) ([]st
 
 	envClasspaths, err := extractClasspathsFromEnv(environ)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse classpath from env variables: %s", err)
+		return nil, fmt.Errorf("unable to parse classpath from env variables: %w", err)
 	}
 
 	for _, envCp := range envClasspaths {
@@ -165,7 +165,7 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 
 		isDir, err := isDirectory(absPath)
 		if err != nil {
-			return nil, fmt.Errorf("unable to determine if %s is a directory: %s", absPath, err)
+			return nil, fmt.Errorf("unable to determine if %s is a directory: %w", absPath, err)
 		}
 
 		if isDir {
