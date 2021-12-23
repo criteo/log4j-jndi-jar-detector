@@ -6,23 +6,47 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
+	"github.com/sirupsen/logrus"
 )
 
 type ElasticSearchReporter struct {
 	client *elasticsearch.Client
+	url    string
 
 	indexNameTemplate string
 }
 
-func NewElasticSearchReporter(url, username, password, indexNameTemplate string) (*ElasticSearchReporter, error) {
+func NewElasticSearchReporter() (*ElasticSearchReporter, error) {
+	esURL := os.Getenv("ES_URL")
+	esUsername := os.Getenv("ES_USERNAME")
+	esPassword := os.Getenv("ES_PASSWORD")
+	esIndex := os.Getenv("ES_INDEX")
+
+	if esURL == "" {
+		return nil, fmt.Errorf("provide ES_URL environment variable")
+	}
+
+	if esUsername == "" {
+		return nil, fmt.Errorf("provide ES_USERNAME environment variable")
+	}
+
+	if esPassword == "" {
+		return nil, fmt.Errorf("provide ES_PASSWORD environment variable")
+	}
+
+	if esIndex == "" {
+		return nil, fmt.Errorf("provide ES_INDEX environment variable")
+	}
+
 	es, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{url},
-		Username:  username,
-		Password:  password,
+		Addresses: []string{esURL},
+		Username:  esUsername,
+		Password:  esPassword,
 	})
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)
@@ -30,7 +54,8 @@ func NewElasticSearchReporter(url, username, password, indexNameTemplate string)
 
 	return &ElasticSearchReporter{
 		client:            es,
-		indexNameTemplate: indexNameTemplate,
+		url:               esURL,
+		indexNameTemplate: esIndex,
 	}, nil
 }
 
@@ -62,7 +87,8 @@ func (esr *ElasticSearchReporter) indexAssessment(assessment map[string]interfac
 	return nil
 }
 
-func (esr *ElasticSearchReporter) Report(hostAssessment HostAssessment) error {
+func (esr *ElasticSearchReporter) ReportAssessment(hostAssessment HostAssessment) error {
+	logrus.Infof("reporting assessment to elasticsearch %s", esr.url)
 	err := esr.indexAssessment(hostAssessment.ToReport())
 	if err != nil {
 		return fmt.Errorf("unable to index host assessment: %w", err)
@@ -89,5 +115,18 @@ func (esr *ElasticSearchReporter) Report(hostAssessment HostAssessment) error {
 		}
 	}
 
+	return nil
+}
+
+func (esr *ElasticSearchReporter) ReportError(fqdn string, anError error) error {
+	logrus.Infof("reporting error to elasticsearch %s", esr.url)
+	err := esr.indexAssessment(map[string]interface{}{
+		"fqdn":    fqdn,
+		"kind":    "error",
+		"message": anError.Error(),
+	})
+	if err != nil {
+		return fmt.Errorf("unable to index error: %w", err)
+	}
 	return nil
 }
