@@ -2,7 +2,7 @@ package detector
 
 import (
 	"fmt"
-	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -170,16 +170,18 @@ func expandJarPaths(cwd string, paths []string) ([]string, error) {
 
 		if isDir {
 			logrus.Debugf("%s is a directory that needs to be expanded", p)
-			filepath.Walk(absPath, func(path string, info fs.FileInfo, err error) error {
-				if err != nil {
-					return err
+			files, err := ioutil.ReadDir(absPath)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, file := range files {
+				if filepath.Ext(file.Name()) == ".jar" && !file.IsDir() {
+					absPath := filepath.Join(absPath, file.Name())
+					logrus.Debugf("%s has been found", absPath)
+					jars = append(jars, absPath)
 				}
-				if filepath.Ext(path) == ".jar" && !info.IsDir() {
-					logrus.Debugf("%s has been found", path)
-					jars = append(jars, path)
-				}
-				return nil
-			})
+			}
 		} else {
 			// skip if it's not a jar
 			if filepath.Ext(absPath) != ".jar" {

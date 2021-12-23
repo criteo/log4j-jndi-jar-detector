@@ -169,11 +169,9 @@ func TestExpandJarPaths(t *testing.T) {
 	}
 	defer f3.Close()
 
-	jars, err := expandJarPaths(tmpDir, []string{".", tmpDir})
+	jars, err := expandJarPaths(tmpDir, []string{".", filepath.Join(tmpDir, "subdir/*")})
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, jars, []string{
-		filepath.Join(tmpDir, "temp.jar"),
-		filepath.Join(tmpDir, "subdir", "temp.jar"),
 		filepath.Join(tmpDir, "temp.jar"),
 		filepath.Join(tmpDir, "subdir", "temp.jar"),
 	})
@@ -206,11 +204,29 @@ func TestDirWithJarExtension(t *testing.T) {
 	err := os.Mkdir(filepath.Join(tmpDir, "test.jar"), 0o755)
 	assert.NoError(t, err)
 
-	f1, err := os.Create(filepath.Join(tmpDir, "test.jar", "user.jar"))
+	jars, err := expandJarPaths(tmpDir, []string{tmpDir})
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, jars, []string{})
+}
+
+func TestDirWithJarsInNestedDirs(t *testing.T) {
+	var tmpDir = t.TempDir()
+	err := os.Mkdir(filepath.Join(tmpDir, "subdir1"), 0o755)
+	assert.NoError(t, err)
+
+	f1, err := os.Create(filepath.Join(tmpDir, "test.jar"))
 	assert.NoError(t, err)
 	defer f1.Close()
 
-	jars, err := expandJarPaths(tmpDir, []string{tmpDir})
+	f2, err := os.Create(filepath.Join(tmpDir, "subdir1", "user.jar"))
 	assert.NoError(t, err)
-	assert.ElementsMatch(t, jars, []string{filepath.Join(tmpDir, "test.jar", "user.jar")})
+	defer f2.Close()
+
+	jars, err := expandJarPaths(tmpDir, []string{filepath.Join(tmpDir, "*")})
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, jars, []string{filepath.Join(tmpDir, "test.jar")})
+
+	jars2, err := expandJarPaths(tmpDir, []string{filepath.Join(tmpDir, "*"), filepath.Join(tmpDir, "subdir1", "*")})
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, jars2, []string{filepath.Join(tmpDir, "test.jar"), filepath.Join(tmpDir, "subdir1", "user.jar")})
 }
