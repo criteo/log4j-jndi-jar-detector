@@ -1,7 +1,7 @@
 package detector
 
 import (
-	"os"
+	"fmt"
 	"strings"
 	"time"
 
@@ -23,10 +23,10 @@ func stringInSlice(str string, slice []string) bool {
 	return false
 }
 
-func runDetectionOneIteration(reporters []string, fqdn string) {
+func runDetectionOneIteration(reporter Reporter, fqdn string) {
 	applications, err := ListApplications("java")
 	if err != nil {
-		logrus.Errorf("unable to list java applications: %s", err)
+		reporter.ReportError(fqdn, fmt.Errorf("unable to list java applications: %w", err))
 		return
 	}
 
@@ -62,63 +62,22 @@ func runDetectionOneIteration(reporters []string, fqdn string) {
 		EndTime:                     endTime,
 	}
 
-	if stringInSlice("stdout", reporters) {
-		logrus.Info("reporting on standard output")
-		stdoutReporter := StdoutReporter{}
-		stdoutReporter.Report(hostAssessment)
-	}
-
-	if stringInSlice("elasticsearch", reporters) {
-		esURL := os.Getenv("ES_URL")
-		esUsername := os.Getenv("ES_USERNAME")
-		esPassword := os.Getenv("ES_PASSWORD")
-		esIndex := os.Getenv("ES_INDEX")
-
-		logrus.Infof("reporting to elasticsearch %s", esURL)
-		reporter, err := NewElasticSearchReporter(esURL, esUsername, esPassword, esIndex)
-		if err != nil {
-			logrus.Errorf("unable to create elasticsearch reporter: %s", err)
-			return
-		}
-
-		err = reporter.Report(hostAssessment)
-		if err != nil {
-			logrus.Errorf("unable to report assessment to elasticsearch: %s", err)
-			return
-		}
+	if err := reporter.ReportAssessment(hostAssessment); err != nil {
+		logrus.Errorf("unable to report host assessment: %s", err)
 	}
 }
 
-func RunDetection(reporters []string, daemon bool, daemonInterval time.Duration) {
+func RunDetection(reporterArgs []string, daemon bool, daemonInterval time.Duration) {
 	// check if provided reporters are valid
-	for _, r := range reporters {
+	for _, r := range reporterArgs {
 		if !stringInSlice(r, AvailableReporters) {
 			logrus.Panicf("reporters must belong to [%s]", strings.Join(AvailableReporters, ", "))
 		}
 	}
 
-	// check if env variable for elasticsearch reporter are provided
-	if stringInSlice("elasticsearch", reporters) {
-		esURL := os.Getenv("ES_URL")
-		esUsername := os.Getenv("ES_USERNAME")
-		esPassword := os.Getenv("ES_PASSWORD")
-		esIndex := os.Getenv("ES_INDEX")
-
-		if esURL == "" {
-			logrus.Panic("provide ES_URL environment variable")
-		}
-
-		if esUsername == "" {
-			logrus.Panic("provide ES_USERNAME environment variable")
-		}
-
-		if esPassword == "" {
-			logrus.Panic("provide ES_PASSWORD environment variable")
-		}
-
-		if esIndex == "" {
-			logrus.Panic("provide ES_INDEX environment variable")
-		}
+	reporter, err := NewReporterComposite(reporterArgs)
+	if err != nil {
+		logrus.Errorf("unable to create reporter: %s", err)
 	}
 
 	name, err := fqdn.FqdnHostname()
@@ -130,7 +89,7 @@ func RunDetection(reporters []string, daemon bool, daemonInterval time.Duration)
 	logrus.Infof("assessing host %s", name)
 
 	for {
-		runDetectionOneIteration(reporters, name)
+		runDetectionOneIteration(reporter, name)
 
 		if !daemon {
 			break
