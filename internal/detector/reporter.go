@@ -7,7 +7,7 @@ import (
 )
 
 type Reporter interface {
-	ReportAssessment(hostAssessment HostAssessment) error
+	ReportAssessment(hostAssessment HostAssessment, safeVersion Semver) error
 	ReportError(fqdn string, anError error) error
 }
 
@@ -35,9 +35,9 @@ func NewReporterComposite(reporterArgs []string) (*ReporterComposite, error) {
 	return &reporterComposite, nil
 }
 
-func (rc *ReporterComposite) ReportAssessment(hostAssessment HostAssessment) error {
+func (rc *ReporterComposite) ReportAssessment(hostAssessment HostAssessment, safeVersion Semver) error {
 	for _, reporter := range rc.reporters {
-		err := reporter.ReportAssessment(hostAssessment)
+		err := reporter.ReportAssessment(hostAssessment, safeVersion)
 		if err != nil {
 			return err
 		}

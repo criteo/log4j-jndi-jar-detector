@@ -87,18 +87,18 @@ func (esr *ElasticSearchReporter) indexAssessment(assessment map[string]interfac
 	return nil
 }
 
-func (esr *ElasticSearchReporter) ReportAssessment(hostAssessment HostAssessment) error {
+func (esr *ElasticSearchReporter) ReportAssessment(hostAssessment HostAssessment, safeVersion Semver) error {
 	logrus.Infof("reporting assessment to elasticsearch %s", esr.url)
-	err := esr.indexAssessment(hostAssessment.ToReport())
+	err := esr.indexAssessment(hostAssessment.ToReport(safeVersion))
 	if err != nil {
 		return fmt.Errorf("unable to index host assessment: %w", err)
 	}
 
 	for _, appAssessment := range hostAssessment.ApplicationAssessments {
-		if !appAssessment.IsVulnerable() {
+		if !appAssessment.IsVulnerable(safeVersion) {
 			continue
 		}
-		doc := appAssessment.ToReport()
+		doc := appAssessment.ToReport(safeVersion)
 		doc["fqdn"] = hostAssessment.FQDN
 		err := esr.indexAssessment(doc)
 		if err != nil {

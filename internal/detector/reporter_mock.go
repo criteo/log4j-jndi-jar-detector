@@ -34,17 +34,17 @@ func (m *MockReporter) EXPECT() *MockReporterMockRecorder {
 }
 
 // ReportAssessment mocks base method.
-func (m *MockReporter) ReportAssessment(hostAssessment HostAssessment) error {
+func (m *MockReporter) ReportAssessment(hostAssessment HostAssessment, safeVersion Semver) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReportAssessment", hostAssessment)
+	ret := m.ctrl.Call(m, "ReportAssessment", hostAssessment, safeVersion)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReportAssessment indicates an expected call of ReportAssessment.
-func (mr *MockReporterMockRecorder) ReportAssessment(hostAssessment interface{}) *gomock.Call {
+func (mr *MockReporterMockRecorder) ReportAssessment(hostAssessment, safeVersion interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportAssessment", reflect.TypeOf((*MockReporter)(nil).ReportAssessment), hostAssessment)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportAssessment", reflect.TypeOf((*MockReporter)(nil).ReportAssessment), hostAssessment, safeVersion)
 }
 
 // ReportError mocks base method.

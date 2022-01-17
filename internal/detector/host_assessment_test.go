@@ -53,5 +53,5 @@ func TestHostAssessmentToReport(t *testing.T) {
 		"nb_vuln_java_processes": 1,
 		"run_end_time":           "2021-01-01T01:02:10Z",
 		"run_start_time":         "2021-01-01T01:00:00Z",
-	}, ha.ToReport())
+	}, ha.ToReport(Semver{Major: 2, Minor: 17, Patch: 0}))
 }

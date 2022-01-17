@@ -45,3 +45,18 @@ func ParseSemver(version string) (Semver, error) {
 
 	return Semver{Major: major, Minor: minor, Patch: patch}, nil
 }
+
+func (s Semver) Equal(other Semver) bool {
+	return s.Major == other.Major && s.Minor == other.Minor && s.Patch == other.Patch
+}
+
+func (s Semver) Less(other Semver) bool {
+	if s.Major == other.Major && s.Minor == other.Minor && s.Patch < other.Patch {
+		return true
+	} else if s.Major == other.Major && s.Minor < other.Minor {
+		return true
+	} else if s.Major < other.Major {
+		return true
+	}
+	return false
+}

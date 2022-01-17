@@ -21,10 +21,10 @@ func NewHostAssessment(fqdn string, appAssessments []ApplicationAssessment,
 	}
 }
 
-func (ha HostAssessment) ToReport() map[string]interface{} {
+func (ha HostAssessment) ToReport(safeVersion Semver) map[string]interface{} {
 	vulnerableAppAssessments := []ApplicationAssessment{}
 	for _, appAssessment := range ha.ApplicationAssessments {
-		if appAssessment.IsVulnerable() {
+		if appAssessment.IsVulnerable(safeVersion) {
 			vulnerableAppAssessments = append(vulnerableAppAssessments, appAssessment)
 		}
 	}

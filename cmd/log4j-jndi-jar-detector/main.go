@@ -14,6 +14,7 @@ var Reporters []string
 var Daemon bool
 var DaemonInterval time.Duration
 var Verbose bool
+var SafeVersion string
 
 var rootCmd = &cobra.Command{
 	Use:   "log4j-jndi-jar-detector",
@@ -24,7 +25,7 @@ var rootCmd = &cobra.Command{
 			logrus.SetLevel(logrus.DebugLevel)
 		}
 
-		detector.RunDetection(Reporters, Daemon, DaemonInterval)
+		detector.RunDetection(Reporters, Daemon, DaemonInterval, SafeVersion)
 	},
 }
 
@@ -33,6 +34,7 @@ func main() {
 	rootCmd.Flags().BoolVarP(&Daemon, "daemon", "d", false, "enable/disable daemon mode")
 	rootCmd.Flags().DurationVarP(&DaemonInterval, "interval", "i", 15*time.Minute, "duration between intervals in daemon mode")
 	rootCmd.Flags().BoolVarP(&Verbose, "verbose", "", false, "enable verbose logs")
+	rootCmd.Flags().StringVarP(&SafeVersion, "safe-version", "", "2.16.0", "version from which we consider the library to be safe")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

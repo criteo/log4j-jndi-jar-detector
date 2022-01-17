@@ -4,10 +4,10 @@ import "github.com/sirupsen/logrus"
 
 type StdoutReporter struct{}
 
-func (sr *StdoutReporter) ReportAssessment(hostAssessment HostAssessment) error {
+func (sr *StdoutReporter) ReportAssessment(hostAssessment HostAssessment, safeVersion Semver) error {
 	for _, a := range hostAssessment.ApplicationAssessments {
 		for _, j := range a.JarAssessments {
-			if !j.IsVulnerable() {
+			if !j.IsVulnerable(safeVersion) {
 				continue
 			}
 			logrus.Infof("%s used in process %d is vulnerable (Version=%s, JNDIClassExists=%t)",
