@@ -23,10 +23,10 @@ func TestReportAssessment(t *testing.T) {
 	reporter.reporters["test"] = m
 
 	m.EXPECT().
-		ReportAssessment(gomock.Eq(assessment)).
+		ReportAssessment(gomock.Eq(assessment), gomock.Eq(Semver{Major: 2, Minor: 17, Patch: 0})).
 		Return(nil)
 
-	err = reporter.ReportAssessment(assessment)
+	err = reporter.ReportAssessment(assessment, Semver{Major: 2, Minor: 17, Patch: 0})
 	assert.NoError(t, err)
 }
 

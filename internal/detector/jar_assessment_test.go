@@ -30,7 +30,7 @@ func TestJarAssessmentIsVulnerable(t *testing.T) {
 				Path:                "/home/user/app.jar",
 				Log4jVersion:        tc.version,
 			}
-			assert.Equal(t, tc.vulnerable, ja.IsVulnerable())
+			assert.Equal(t, tc.vulnerable, ja.IsVulnerable(Semver{2, 17, 0}))
 		})
 	}
 }

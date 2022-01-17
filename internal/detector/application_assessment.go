@@ -12,16 +12,16 @@ type ApplicationAssessment struct {
 	JarAssessments []JarAssessement
 }
 
-func (aa *ApplicationAssessment) IsVulnerable() bool {
+func (aa *ApplicationAssessment) IsVulnerable(safeVersion Semver) bool {
 	for _, j := range aa.JarAssessments {
-		if j.IsVulnerable() {
+		if j.IsVulnerable(safeVersion) {
 			return true
 		}
 	}
 	return false
 }
 
-func (aa ApplicationAssessment) ToReport() map[string]interface{} {
+func (aa ApplicationAssessment) ToReport(safeVersion Semver) map[string]interface{} {
 	vulnJars := make([]string, 0)
 	hasJNDIClass := false
 	versionSet := map[Semver]struct{}{}
@@ -29,7 +29,7 @@ func (aa ApplicationAssessment) ToReport() map[string]interface{} {
 
 	for _, j := range aa.JarAssessments {
 		// skip non vulnerable assessments
-		if !j.IsVulnerable() {
+		if !j.IsVulnerable(safeVersion) {
 			continue
 		}
 		vulnerableAssessmentsCount += 1

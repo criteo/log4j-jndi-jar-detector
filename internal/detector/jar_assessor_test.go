@@ -34,7 +34,7 @@ func TestJarAssessorOnVulnerableLog4j(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.JNDIClassIncluded, assessment.isJNDIClassIncluded)
 			assert.Equal(t, tc.Version, assessment.Log4jVersion)
-			assert.Equal(t, tc.IsVulnerable, assessment.IsVulnerable())
+			assert.Equal(t, tc.IsVulnerable, assessment.IsVulnerable(Semver{2, 17, 0}))
 		})
 	}
 }

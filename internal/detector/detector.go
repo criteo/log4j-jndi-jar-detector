@@ -23,7 +23,7 @@ func stringInSlice(str string, slice []string) bool {
 	return false
 }
 
-func runDetectionOneIteration(reporter Reporter, fqdn string) {
+func runDetectionOneIteration(reporter Reporter, fqdn string, safeVersion Semver) {
 	applications, err := ListApplications("java")
 	if err != nil {
 		reporter.ReportError(fqdn, fmt.Errorf("unable to list java applications: %w", err))
@@ -62,12 +62,12 @@ func runDetectionOneIteration(reporter Reporter, fqdn string) {
 		EndTime:                     endTime,
 	}
 
-	if err := reporter.ReportAssessment(hostAssessment); err != nil {
+	if err := reporter.ReportAssessment(hostAssessment, safeVersion); err != nil {
 		logrus.Errorf("unable to report host assessment: %s", err)
 	}
 }
 
-func RunDetection(reporterArgs []string, daemon bool, daemonInterval time.Duration) {
+func RunDetection(reporterArgs []string, daemon bool, daemonInterval time.Duration, SafeVersion string) {
 	// check if provided reporters are valid
 	for _, r := range reporterArgs {
 		if !stringInSlice(r, AvailableReporters) {
@@ -75,9 +75,16 @@ func RunDetection(reporterArgs []string, daemon bool, daemonInterval time.Durati
 		}
 	}
 
+	safeVersionSemver, err := ParseSemver(SafeVersion)
+	if err != nil {
+		logrus.Errorf("unable to parse safe version %s", SafeVersion)
+		return
+	}
+
 	reporter, err := NewReporterComposite(reporterArgs)
 	if err != nil {
 		logrus.Errorf("unable to create reporter: %s", err)
+		return
 	}
 
 	name, err := fqdn.FqdnHostname()
@@ -89,7 +96,7 @@ func RunDetection(reporterArgs []string, daemon bool, daemonInterval time.Durati
 	logrus.Infof("assessing host %s", name)
 
 	for {
-		runDetectionOneIteration(reporter, name)
+		runDetectionOneIteration(reporter, name, safeVersionSemver)
 
 		if !daemon {
 			break

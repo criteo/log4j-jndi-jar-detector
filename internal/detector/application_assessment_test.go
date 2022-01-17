@@ -12,7 +12,7 @@ func TestApplicationAssessmentToReport(t *testing.T) {
 		JarAssessments: []JarAssessement{VulnerableJarAssessment, NonVulnerableJarAssessment},
 	}
 
-	report := applicationAssessment.ToReport()
+	report := applicationAssessment.ToReport(Semver{Major: 2, Minor: 17, Patch: 0})
 	assert.Equal(t, map[string]interface{}{
 		"appname":        "java -jar app.jar",
 		"has_jndi_class": true,
