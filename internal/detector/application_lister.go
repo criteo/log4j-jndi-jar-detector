@@ -202,53 +202,61 @@ func ListApplications(commandPattern string) ([]Application, error) {
 		if err != nil {
 			continue
 		}
-		if strings.HasPrefix(name, commandPattern) {
-			cmdlineSlice, err := p.CmdlineSlice()
-			if err != nil {
-				logrus.Warnf("unable to extract command line from process: %s", err)
-				continue
-			}
-			logrus.Debugf("command line to assess: %s", strings.Join(cmdlineSlice, " "))
-
-			env, err := p.Environ()
-			if err != nil {
-				logrus.Warnf("unable to extract environ from process: %s", err)
-				continue
-			}
-
-			classpaths, err := extractClasspathsFromProcess(cmdlineSlice, env)
-			if err != nil {
-				logrus.Warnf("unable to extract classpaths from process: %s", err)
-				continue
-			}
-
-			cwd, err := p.Cwd()
-			if err != nil {
-				logrus.Warnf("unable to extract working dir from process: %s", err)
-				continue
-			}
-
-			jarPaths, err := expandJarPaths(cwd, classpaths)
-			if err != nil {
-				logrus.Warnf("unable to expand classpaths: %s", err)
-				continue
-			}
-
-			username, err := p.Username()
-			if err != nil {
-				logrus.Warnf("unable to extract username from process: %s", err)
-				continue
-			}
-
-			applications = append(applications, Application{
-				Name:         name,
-				CmdlineSlice: cmdlineSlice,
-				Cwd:          cwd,
-				Pid:          p.Pid,
-				Jars:         jarPaths,
-				Username:     username,
-			})
+		if !strings.HasPrefix(name, commandPattern) {
+			logrus.Debugf("process with name %s will not be assessed", name)
+			continue
 		}
+
+		pid, err := p.Ppid()
+		if err != nil {
+			logrus.Warnf("unable to extract pid from process: %s", err)
+			continue
+		}
+		cmdlineSlice, err := p.CmdlineSlice()
+		if err != nil {
+			logrus.Warnf("unable to extract command line from process: %s", err)
+			continue
+		}
+		logrus.Debugf("command line of process %d (%s) to assess: %s", pid, name, strings.Join(cmdlineSlice, " "))
+
+		env, err := p.Environ()
+		if err != nil {
+			logrus.Warnf("unable to extract environ from process: %s", err)
+			continue
+		}
+
+		classpaths, err := extractClasspathsFromProcess(cmdlineSlice, env)
+		if err != nil {
+			logrus.Warnf("unable to extract classpaths from process: %s", err)
+			continue
+		}
+
+		cwd, err := p.Cwd()
+		if err != nil {
+			logrus.Warnf("unable to extract working dir from process: %s", err)
+			continue
+		}
+
+		jarPaths, err := expandJarPaths(cwd, classpaths)
+		if err != nil {
+			logrus.Warnf("unable to expand classpaths: %s", err)
+			continue
+		}
+
+		username, err := p.Username()
+		if err != nil {
+			logrus.Warnf("unable to extract username from process: %s", err)
+			continue
+		}
+
+		applications = append(applications, Application{
+			Name:         name,
+			CmdlineSlice: cmdlineSlice,
+			Cwd:          cwd,
+			Pid:          p.Pid,
+			Jars:         jarPaths,
+			Username:     username,
+		})
 	}
 	return applications, nil
 }
