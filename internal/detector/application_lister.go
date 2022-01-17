@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/shirou/gopsutil/process"
@@ -67,7 +68,14 @@ func extractOptionArgs(cmdlineSlice []string, flags []string) ([]string, error) 
 }
 
 func parseClassPathWithSeparators(classpath string) []string {
-	return strings.Split(classpath, ";")
+	var separator string
+	switch runtime.GOOS {
+	case "windows":
+		separator = ";"
+	default:
+		separator = ":"
+	}
+	return strings.Split(classpath, separator)
 }
 
 func parseEnvVars(environ []string) (map[string]string, error) {

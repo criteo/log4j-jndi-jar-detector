@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -135,10 +136,10 @@ func TestExtractJarsFromProcess(t *testing.T) {
 	classpaths, err := extractClasspathsFromProcess(args, []string{
 		"TEST=myvar",
 		"CLASSPATH=cp.jar",
-		"USER_CLASSPATH=user.jar;/usr/lib/*",
+		"USER_CLASSPATH=user.jar:/usr/lib/*",
 		"USER_CLASSPATH_TEST=user2.jar",
 		// The separator between jars in the classpath is ;
-		"SEPARATED_CLASSPATH=separated1.jar;separated2.jar",
+		"SEPARATED_CLASSPATH=separated1.jar:separated2.jar",
 	})
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, classpaths, []string{
@@ -156,6 +157,9 @@ func TestExtractJarsFromProcess(t *testing.T) {
 
 // This test more specifically targets Windows
 func TestExtractJarsFromProcessQuotesNotTrimmedByOS(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("skipping test on platform other than windows")
+	}
 	args := []string{
 		"java",
 		"-jar",
