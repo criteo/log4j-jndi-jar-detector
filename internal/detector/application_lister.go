@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/shirou/gopsutil/process"
@@ -54,7 +55,9 @@ func extractOptionArgs(cmdlineSlice []string, flags []string) ([]string, error) 
 		if len(cmdlineSlice) <= idx {
 			return nil, fmt.Errorf("unable to parse flag at position %d in %s", idx+1, strings.Join(cmdlineSlice, " "))
 		}
-		values[cmdlineSlice[idx]] = struct{}{}
+		// In Windows, quotes wrapping arguments are not trimmed by the OS as in Unix
+		flagValue := strings.Trim(cmdlineSlice[idx], "\"")
+		values[flagValue] = struct{}{}
 	}
 
 	out := make([]string, 0)
@@ -64,8 +67,15 @@ func extractOptionArgs(cmdlineSlice []string, flags []string) ([]string, error) 
 	return out, nil
 }
 
-func parseClassPath(classpath string) []string {
-	return strings.Split(classpath, ":")
+func parseClassPathWithSeparators(classpath string) []string {
+	var separator string
+	switch runtime.GOOS {
+	case "windows":
+		separator = ";"
+	default:
+		separator = ":"
+	}
+	return strings.Split(classpath, separator)
 }
 
 func parseEnvVars(environ []string) (map[string]string, error) {
@@ -90,11 +100,18 @@ func extractClasspathsFromEnv(environ []string) ([]string, error) {
 	}
 
 	jars := make([]string, 0)
+	classpathEnvDetected := false
 
 	for envKey, envValue := range envVars {
 		if strings.Contains(envKey, "CLASSPATH") {
-			jars = append(jars, parseClassPath(envValue)...)
+			logrus.Debugf("Classpath environment variable detected: %s=%s", envKey, envValue)
+			jars = append(jars, parseClassPathWithSeparators(envValue)...)
+			classpathEnvDetected = true
 		}
+	}
+
+	if !classpathEnvDetected {
+		logrus.Debugf("No classpath environment variable detected")
 	}
 	return jars, nil
 }
@@ -116,7 +133,7 @@ func extractClasspathsFromProcess(cmdlineSlice []string, environ []string) ([]st
 	}
 
 	for _, cmdClasspath := range cmdClasspaths {
-		jarPaths := parseClassPath(cmdClasspath)
+		jarPaths := parseClassPathWithSeparators(cmdClasspath)
 		for _, jar := range jarPaths {
 			jarRepository[jar] = struct{}{}
 		}
