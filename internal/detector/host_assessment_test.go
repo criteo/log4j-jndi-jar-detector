@@ -10,7 +10,7 @@ import (
 var NonVulnerableJarAssessment = JarAssessement{
 	isJNDIClassIncluded: false,
 	Path:                "/home/myuser/app.jar",
-	Log4jVersion:        Semver{Major: 1, Minor: 0, Patch: 0},
+	Log4jVersion:        Semver{Major: 2, Minor: 1, Patch: 0},
 }
 
 var VulnerableJarAssessment = JarAssessement{

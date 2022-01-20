@@ -13,8 +13,10 @@ func TestJarAssessmentIsVulnerable(t *testing.T) {
 		version    Semver
 		vulnerable bool
 	}{
-		{false, Semver{1, 0, 0}, false},
-		{true, Semver{1, 0, 0}, false},
+		{false, Semver{1, 0, 0}, true},
+		{true, Semver{1, 0, 0}, true},
+		{false, Semver{1, 2, 0}, true},
+		{true, Semver{1, 2, 0}, true},
 		{false, Semver{2, 0, 0}, true},
 		{true, Semver{2, 0, 0}, true},
 		{true, Semver{2, 2, 0}, true},
