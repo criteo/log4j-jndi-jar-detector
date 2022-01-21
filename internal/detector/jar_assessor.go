@@ -13,6 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var regex = regexp.MustCompile("(.*)=(.*)")
 var JarAssessmentCache = cache.New(3*time.Hour, 10*time.Minute)
 
 const JNDIClassName = "JndiLookup.class"
@@ -64,9 +65,6 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 	}
 	defer read.Close()
 
-	regex := *regexp.MustCompile("(.*)=(.*)")
-	var version Semver
-
 	jniClassPresent := false
 
 	for _, file := range read.File {
@@ -104,19 +102,16 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 				semver, err := ParseSemver(v)
 				if err != nil {
 					logrus.Warnf("unable to parse semver: %s", err)
-					continue
 				}
-				version = semver
-				break
+				jarAssessment := JarAssessement{
+					Path:                path,
+					isJNDIClassIncluded: jniClassPresent,
+					Log4jVersion:        semver,
+				}
+				JarAssessmentCache.Set(path, jarAssessment, cache.DefaultExpiration)
+				return jarAssessment, nil
 			}
 		}
 	}
-
-	jarAssessment := JarAssessement{
-		Path:                path,
-		isJNDIClassIncluded: jniClassPresent,
-		Log4jVersion:        version,
-	}
-	JarAssessmentCache.Set(path, jarAssessment, cache.DefaultExpiration)
-	return jarAssessment, nil
+	return JarAssessement{}, nil
 }

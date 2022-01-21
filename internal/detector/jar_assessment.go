@@ -14,3 +14,7 @@ func (ja JarAssessement) IsVulnerable(safeVersion Semver) bool {
 	}
 	return true
 }
+
+func (ja JarAssessement) ContainsLog4j() bool {
+	return ja.Path != ""
+}

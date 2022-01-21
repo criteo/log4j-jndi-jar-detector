@@ -18,7 +18,10 @@ func (aa *ApplicationAssessor) Assess(application Application) (ApplicationAsses
 		if err != nil {
 			return ApplicationAssessment{}, err
 		}
-		jarAssessments = append(jarAssessments, jarAssessment)
+
+		if jarAssessment.ContainsLog4j() {
+			jarAssessments = append(jarAssessments, jarAssessment)
+		}
 	}
 	applicationAssessment := ApplicationAssessment{
 		Application:    application,
