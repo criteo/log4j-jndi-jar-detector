@@ -13,6 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var Regex = *regexp.MustCompile("(.*)=(.*)")
 var JarAssessmentCache = cache.New(3*time.Hour, 10*time.Minute)
 
 const JNDIClassName = "JndiLookup.class"
@@ -50,22 +51,19 @@ func NewJarAssessor(jarChecker JarChecker) JarAssessor {
 	}
 }
 
-func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
+func (ja *JarAssessor) Assess(path string) (*JarAssessement, error) {
 	logrus.Infof("assessing: %s", path)
 
 	if v, found := JarAssessmentCache.Get(path); found {
-		return v.(JarAssessement), nil
+		return v.(*JarAssessement), nil
 	}
 
 	read, err := zip.OpenReader(path)
 
 	if err != nil {
-		return JarAssessement{}, fmt.Errorf("unable to open zip file %s: %w", path, err)
+		return nil, fmt.Errorf("unable to open zip file %s: %w", path, err)
 	}
 	defer read.Close()
-
-	regex := *regexp.MustCompile("(.*)=(.*)")
-	var version Semver
 
 	jniClassPresent := false
 
@@ -79,7 +77,7 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 
 		freader, err := file.Open()
 		if err != nil {
-			return JarAssessement{}, fmt.Errorf("unable to open pom.properties from %s: %w", path, err)
+			return nil, fmt.Errorf("unable to open pom.properties from %s: %w", path, err)
 		}
 		defer freader.Close()
 
@@ -87,7 +85,7 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 		props := make(map[string]string)
 
 		for scanner.Scan() {
-			res := regex.FindStringSubmatch(scanner.Text())
+			res := Regex.FindStringSubmatch(scanner.Text())
 			if len(res) < 3 {
 				continue
 			}
@@ -104,19 +102,16 @@ func (ja *JarAssessor) Assess(path string) (JarAssessement, error) {
 				semver, err := ParseSemver(v)
 				if err != nil {
 					logrus.Warnf("unable to parse semver: %s", err)
-					continue
 				}
-				version = semver
-				break
+				jarAssessment := JarAssessement{
+					Path:                path,
+					isJNDIClassIncluded: jniClassPresent,
+					Log4jVersion:        semver,
+				}
+				JarAssessmentCache.Set(path, &jarAssessment, cache.DefaultExpiration)
+				return &jarAssessment, nil
 			}
 		}
 	}
-
-	jarAssessment := JarAssessement{
-		Path:                path,
-		isJNDIClassIncluded: jniClassPresent,
-		Log4jVersion:        version,
-	}
-	JarAssessmentCache.Set(path, jarAssessment, cache.DefaultExpiration)
-	return jarAssessment, nil
+	return nil, nil
 }
